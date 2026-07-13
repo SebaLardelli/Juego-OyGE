@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visionant · Simulación Organizacional</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #12151c;
+      --surface2: #1a1f2b;
+      --border: #2a3142;
+      --text: #eef1f7;
+      --muted: #8b95a8;
+      --accent: #7c6cff;
+      --accent2: #00d4aa;
+      --danger: #ff5c6c;
+      --warning: #ffb020;
+      --success: #2dd4a0;
+      --visionant: #bfd732;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: block; }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 40px 0 28px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--visionant);
+      border: 1px solid rgba(191, 215, 50, 0.35);
+      background: rgba(191, 215, 50, 0.08);
+      border-radius: 999px;
+      padding: 5px 14px;
+      margin-bottom: 16px;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Syne', sans-serif;
+      letter-spacing: -0.5px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      max-width: 680px;
+      margin: 0 auto 28px;
+      font-size: 0.98rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 800px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .themes-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .theme-chip {
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid transparent;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font: inherit;
+      margin-bottom: 12px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #5b4fe8);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-spin {
+      background: linear-gradient(135deg, var(--visionant), #9ab020);
+      color: #111;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      padding: 14px 28px;
+      margin-top: 16px;
+    }
+
+    .player-inputs {
+      display: grid;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .center-actions {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+  /* ── JUEGO ── */
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .turn-banner {
+      background: linear-gradient(90deg, rgba(124, 108, 255, 0.15), rgba(0, 212, 170, 0.1));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .turn-banner strong { color: var(--visionant); }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .game-layout { grid-template-columns: 1fr; }
+    }
+
+    .scoreboard h3 {
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .player-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: var(--surface2);
+      border: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .player-row.active {
+      border-color: var(--visionant);
+      box-shadow: 0 0 0 1px rgba(191, 215, 50, 0.2);
+    }
+
+    .player-row .pts {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .wheel-area {
+      text-align: center;
+    }
+
+    .wheel-wrap {
+      position: relative;
+      width: min(360px, 90vw);
+      margin: 0 auto;
+    }
+
+    #ruleta {
+      width: 100%;
+      display: block;
+      border-radius: 50%;
+      box-shadow: 0 0 0 6px var(--surface2), 0 0 40px rgba(124, 108, 255, 0.15);
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 22px solid var(--visionant);
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      z-index: 2;
+    }
+
+    .wheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 3px solid var(--visionant);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--visionant);
+      z-index: 2;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .legend span {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+  /* ── MODAL TARJETA ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      max-width: 620px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .modal h2 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+    }
+
+    .modal .teoria {
+      font-size: 0.82rem;
+      color: var(--accent2);
+      margin-bottom: 12px;
+    }
+
+    .info-block {
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .info-block.contexto {
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      color: #b8d4ff;
+    }
+
+    .info-block.problematica {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #ffc9c9;
+    }
+
+    .problema-real-badge {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border: 1px solid;
+    }
+
+    .ranking-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .ranking-meta span {
+      font-size: 0.82rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .ranking-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+
+    .ranking-table th,
+    .ranking-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ranking-table th {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ranking-table tr.winner-row td {
+      color: var(--visionant);
+      font-weight: 600;
+    }
+
+    .info-turnos {
+      font-size: 0.85rem;
+      color: var(--accent2);
+      margin: -4px 0 12px;
+      padding: 8px 10px;
+      background: rgba(0, 212, 170, 0.08);
+      border-radius: 8px;
+      border: 1px solid rgba(0, 212, 170, 0.2);
+    }
+
+    .info-block strong,
+    .pregunta-label strong {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 5px;
+      opacity: 0.85;
+    }
+
+    .pregunta-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 14px 0 10px;
+      color: var(--text);
+    }
+
+    .opciones-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+    .opcion {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .opcion-titulo {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .opcion-detalle {
+      display: block;
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .opcion:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: rgba(124, 108, 255, 0.08);
+    }
+
+    .opcion:disabled { cursor: default; }
+
+    .feedback-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .feedback-box.show { display: block; }
+
+    .feedback-box.positivo {
+      background: rgba(45, 212, 160, 0.1);
+      border: 1px solid rgba(45, 212, 160, 0.35);
+    }
+
+    .feedback-box.negativo {
+      background: rgba(255, 92, 108, 0.1);
+      border: 1px solid rgba(255, 92, 108, 0.35);
+    }
+
+    .feedback-box.neutro {
+      background: rgba(255, 176, 32, 0.1);
+      border: 1px solid rgba(255, 176, 32, 0.35);
+    }
+
+    .pts-change {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+  /* ── RESULTADOS ── */
+    .podium {
+      display: grid;
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .podium-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+
+    .podium-item.winner {
+      border-color: var(--visionant);
+      background: rgba(191, 215, 50, 0.08);
+    }
+
+    .rank {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--muted);
+      width: 36px;
+    }
+
+    .podium-item.winner .rank { color: var(--visionant); }
+
+    .diag {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--surface2);
+      border-left: 4px solid var(--accent);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .ia-section {
+      margin-top: 24px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .ia-section h3 {
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.4s;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ PANTALLA INICIO ═══════════════ -->
+<section id="screen-inicio" class="screen active">
+  <div class="wrap">
+    <div class="hero">
+      <div class="badge">Simulación Organizacional · OyGE 2026</div>
+      <h1>Visionant: La Ruleta de la Transformación</h1>
+      <p class="subtitle">
+        No hace falta conocer Visionant para jugar. En cada tarjeta vas a leer
+        <strong>quién es la empresa</strong>, <strong>cuál es el problema</strong> y
+        <strong>qué podés decidir</strong>. Ganás puntos si elegís lo que más ayuda
+        a una empresa de tecnología que hoy debe cambiar cómo trabaja y cómo cobra.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Contexto organizacional</h3>
+        <p style="color:var(--muted);font-size:0.92rem;margin-top:8px;line-height:1.6">
+          <strong style="color:var(--text)">¿Qué es Visionant?</strong> Es una empresa argentina de tecnología
+          que ayuda a otras empresas a digitalizarse. Tiene más de 31.000 empleados en muchos países
+          y cotiza en bolsa de EE.UU.<br><br>
+          <strong style="color:var(--text)">¿Cuál es el drama?</strong> Siempre cobró por horas de trabajo
+          de sus programadores. Ahora la inteligencia artificial hace el trabajo más rápido, los clientes
+          pagan menos y la ganancia de la empresa bajó mucho. Visionant debe cambiar su forma de trabajar
+          y de cobrar, pero eso genera miedo, despidos y resistencia interna.
+        </p>
+        <div class="themes-grid">
+          <div class="theme-chip" style="background:#1e3a5f;color:#7ec8ff">Contexto</div>
+          <div class="theme-chip" style="background:#3d1f1f;color:#ff8a8a">Problemas</div>
+          <div class="theme-chip" style="background:#1f3d2a;color:#7dffb0">Cultura</div>
+          <div class="theme-chip" style="background:#2f2a4a;color:#c4b5fd">Estructura</div>
+          <div class="theme-chip" style="background:#3d3018;color:#ffd166">Liderazgo</div>
+          <div class="theme-chip" style="background:#3d1830;color:#ff8ec4">Conflictos</div>
+          <div class="theme-chip" style="background:#183d3d;color:#5eead4">Innovación</div>
+          <div class="theme-chip" style="background:#2a2a18;color:#fde68a">Desafíos estratégicos</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Configurar partida</h3>
+        <label for="numJugadores">Cantidad de consultores</label>
+        <select id="numJugadores">
+          <option value="1">1 jugador (modo práctica)</option>
+          <option value="2" selected>2 jugadores</option>
+          <option value="3">3 jugadores</option>
+          <option value="4">4 jugadores</option>
+        </select>
+
+        <label for="numRondas">Rondas por jugador</label>
+        <select id="numRondas">
+          <option value="2">2 rondas (partida corta)</option>
+          <option value="3" selected>3 rondas</option>
+          <option value="4">4 rondas</option>
+          <option value="5">5 rondas</option>
+          <option value="6">6 rondas</option>
+          <option value="8">8 rondas (partida larga)</option>
+        </select>
+
+        <p class="info-turnos">
+          <strong>Ronda:</strong> Cada consultor juega una vez.<br>
+          <strong>Turnos:</strong> Rondas × Cantidad de Consultores.<br>
+          <strong>Escenarios:</strong> Hay 32 posibles y no se repiten durante la partida.
+        </p>
+
+        <div class="player-inputs" id="playerInputs"></div>
+
+        <div class="center-actions">
+          <button class="btn btn-primary" id="btnIniciar">Iniciar simulación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PANTALLA JUEGO ═══════════════ -->
+<section id="screen-juego" class="screen">
+  <div class="wrap">
+    <div class="game-header">
+      <div>
+        <h2>Simulación en curso</h2>
+        <p style="color:var(--muted);font-size:0.88rem">Turnos · Decisiones · Consecuencias</p>
+      </div>
+      <button class="btn btn-secondary" id="btnAbandonar">Abandonar</button>
+    </div>
+
+    <div class="turn-banner">
+      <div>Turno de <strong id="turnoNombre">—</strong> · Ronda <strong id="rondaJugador">1</strong> de <strong id="rondaMaxJugador">3</strong></div>
+      <div style="font-size:0.88rem;color:var(--muted)">
+        Turno <span id="rondaActual">1</span> / <span id="rondaTotal">6</span>
+      </div>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+    <div class="game-layout" style="margin-top:20px">
+      <aside class="card scoreboard">
+        <h3>Puntos Visionant</h3>
+        <div id="scoreList"></div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+        <p style="font-size:0.78rem;color:var(--muted)">
+          +20 óptimo · +10 razonable · −15 crítico
+        </p>
+      </aside>
+
+      <div class="card wheel-area">
+        <h3 style="margin-bottom:4px">Ruleta organizacional</h3>
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:8px">
+          Cada color representa un eje obligatorio de la simulación
+        </p>
+        <div class="wheel-wrap">
+          <div class="wheel-pointer"></div>
+          <canvas id="ruleta" width="360" height="360"></canvas>
+          <div class="wheel-center">GLOB</div>
+        </div>
+        <button class="btn btn-spin" id="btnGirar">Girar ruleta</button>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PANTALLA RESULTADOS ═══════════════ -->
+<section id="screen-resultados" class="screen">
+  <div class="wrap">
+    <div class="hero" style="padding-top:28px">
+      <div class="badge">Fin de la simulación</div>
+      <h1 id="tituloGanador">—</h1>
+      <p class="subtitle" id="subGanador">—</p>
+    </div>
+
+    <div class="card">
+      <h3>🏆 Ranking final</h3>
+      <div class="ranking-meta" id="rankingMeta"></div>
+      <div class="podium" id="podium"></div>
+      <table class="ranking-table" id="rankingTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Consultor</th>
+            <th>Puntos</th>
+            <th>Decisiones</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody"></tbody>
+      </table>
+      <div class="diag" id="diagnostico"></div>
+    </div>
+
+    <div class="card ia-section" style="margin-top:16px">
+      <h3>Uso de Inteligencia Artificial</h3>
+      <p>
+        La interfaz interactiva (HTML) fue desarrollada con apoyo de IA generativa como herramienta
+        de prototipado. Las preguntas, escenarios, decisiones y fundamentación teórica fueron
+        elaborados por el grupo de trabajo, sin uso de IA, a partir del análisis de Visionant
+        y del material de la cátedra.
+      </p>
+    </div>
+
+    <div class="center-actions">
+      <button class="btn btn-primary" id="btnReiniciar">Jugar de nuevo</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MODAL TARJETA ═══════════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalCard">
+    <div class="modal-tag" id="modalTag">—</div>
+    <div class="problema-real-badge" id="modalProblemaReal">—</div>
+    <h2 id="modalTitulo">—</h2>
+    <div class="teoria" id="modalTeoria">—</div>
+    <div class="info-block contexto" id="modalContexto"></div>
+    <div class="info-block problematica" id="modalProblematica"></div>
+    <p class="pregunta-label" id="modalPregunta"></p>
+    <div class="opciones-label">Elegí una opción</div>
+    <div id="modalOpciones"></div>
+    <div class="feedback-box" id="feedbackBox">
+      <div class="pts-change" id="ptsChange">+0</div>
+      <p id="feedbackText">—</p>
+      <div class="center-actions" style="margin-top:14px">
+        <button class="btn btn-primary" id="btnContinuar">Continuar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   TEMAS — 8 ejes obligatorios de la consigna
+   ═══════════════════════════════════════════ */
+const TEMAS = [
+  { id: 'contexto',   nombre: 'Contexto',              color: '#3b82f6', problemaTipo: 'El entorno externo (competencia, economía, clientes) presiona a Visionant', teoria: 'Análisis contextual · Porter · Entorno global/regional/industrial' },
+  { id: 'problemas',  nombre: 'Problemas',             color: '#ef4444', problemaTipo: 'La empresa atraviesa una crisis concreta que amenaza su supervivencia', teoria: 'Situación problemática · Crisis · Compresión de márgenes' },
+  { id: 'cultura',    nombre: 'Cultura',               color: '#22c55e', problemaTipo: 'Los valores y la identidad de Visionant chocan con la nueva estrategia', teoria: 'Modelo 7S (McKinsey) · ADN organizacional · Valores compartidos' },
+  { id: 'estructura', nombre: 'Estructura',            color: '#a855f7', problemaTipo: 'La forma de organizar equipos genera confusión, duplicación y lentitud', teoria: 'Estructura matricial · Studios · Coordinación y doble reporte' },
+  { id: 'liderazgo',  nombre: 'Liderazgo',             color: '#f59e0b', problemaTipo: 'La dirección debe guiar el cambio y sostener la confianza de la gente', teoria: 'Liderazgo transformacional · Comunicación · Legitimación del cambio' },
+  { id: 'conflictos', nombre: 'Conflictos',            color: '#ec4899', problemaTipo: 'Hay tensiones internas, resistencia y desconfianza entre las personas', teoria: 'Resistencia al cambio · Negociación · Plano político y social' },
+  { id: 'innovacion', nombre: 'Innovación',            color: '#14b8a6', problemaTipo: 'Visionant debe reinventar cómo trabaja y cómo cobra usando inteligencia artificial', teoria: 'AI Pods · GEAI · Aprendizaje organizacional · Disrupción tecnológica' },
+  { id: 'desafios',   nombre: 'Desafíos estratégicos', color: '#eab308', problemaTipo: 'Decisiones de largo plazo que definen el futuro de la empresa', teoria: 'Política de negocios · Expansión · Escenarios futuros · Portafolio' }
+];
+
+/* ═══════════════════════════════════════════
+   ESCENARIOS — Tarjetas de decisión por tema
+   ═══════════════════════════════════════════ */
+const ESCENARIOS = {
+  contexto: [
+    {
+      titulo: 'Mucha competencia en tecnología',
+      contexto: 'Visionant es una empresa que vende servicios de programación y transformación digital a grandes clientes. Hoy muchas empresas —grandes y chicas— ofrecen lo mismo, muchas veces usando inteligencia artificial.',
+      problematica: 'PROBLEMA DE CONTEXTO: Los clientes ya no ven una gran diferencia entre Visionant y sus competidores. Si Visionant solo compite bajando precios, pierde plata sin destacar.',
+      pregunta: '¿Cómo debería posicionarse Visionant frente a la competencia?',
+      teoria: 'Análisis del entorno (Porter): rivalidad entre competidores',
+      opciones: [
+        { texto: 'Intentar ganar clientes bajando los precios por debajo de la competencia', detalle: '', puntos: -15, tipo: 'negativo', feedback: 'Mala idea: cuando todos compiten solo por precio, las ganancias bajan para todos. No hay diferenciación real.' },
+        { texto: 'Ofrecer resultados concretos con IA en sectores donde ya es fuerte', detalle: 'Por ejemplo en gaming, finanzas o salud: mostrar qué logró, no cuántas horas trabajó.', puntos: 20, tipo: 'positivo', feedback: 'Correcto: los clientes hoy quieren resultados medibles, no solo horas de trabajo. Eso es lo que Visionant intenta con AI Pods.' },
+        { texto: 'Esperar a ver qué pasa en el mercado antes de decidir', detalle: 'No moverse hasta que el panorama esté más claro.', puntos: -15, tipo: 'negativo', feedback: 'En un mercado que cambia rápido por la IA, esperar demasiado hace que la competencia se adelante.' }
+      ]
+    },
+    {
+      titulo: 'Economía difícil en el exterior',
+      contexto: 'Más de la mitad de los ingresos de Visionant vienen de Estados Unidos y Canadá. En 2025 hubo incertidumbre económica, aranceles y menos gasto en tecnología.',
+      problematica: 'PROBLEMA DE CONTEXTO: Los clientes tardan más en firmar contratos y gastan con más cuidado. Contratar mucha gente nueva sin un plan claro empeora los costos.',
+      pregunta: '¿Qué debería priorizar Visionant en este contexto económico?',
+      teoria: 'Análisis contextual: entorno global y regional',
+      opciones: [
+        { texto: 'Reorientar la propuesta comercial hacia el retorno de inversión', detalle: 'Mostrar cuánto ahorra o gana el cliente, no cuántas horas trabaja Visionant.', puntos: 20, tipo: 'positivo', feedback: 'Tiene sentido: cuando la economía está difícil, los clientes compran lo que les resuelve un problema concreto.' },
+        { texto: 'Contratar muchos empleados nuevos para crecer más rápido', detalle: 'Sumar personas para ganar más contratos, como hacía antes.', puntos: -15, tipo: 'negativo', feedback: 'El modelo viejo de “más empleados = más facturación” ya no funciona igual con la IA. Los costos suben sin la misma ganancia.' },
+        { texto: 'Apostar más fuerte a Latinoamérica como base de trabajo', detalle: 'Usar la ventaja de horarios, talento y costos en la región.', puntos: 20, tipo: 'positivo', feedback: 'Buena lectura del entorno regional: LATAM sigue siendo un punto fuerte para empresas de tecnología.' }
+      ]
+    },
+    {
+      titulo: 'Pocos clientes concentran muchos ingresos',
+      contexto: 'Visionant tiene miles de clientes, pero solo 20 grandes empresas representan el 40% de toda su facturación.',
+      problematica: 'PROBLEMA DE CONTEXTO: Esos clientes tienen mucho poder para negociar descuentos y plazos. Si Visionant cede por miedo a perderlos, el entorno (no la estrategia interna) termina marcando las condiciones del negocio.',
+      pregunta: '¿Cómo responde Visionant al poder de negociación de sus clientes?',
+      teoria: 'Porter: poder de negociación de los clientes',
+      opciones: [
+        { texto: 'Ceder en precio y condiciones para no perder los contratos de los clientes grandes', detalle: '', puntos: -15, tipo: 'negativo', feedback: 'Refuerza el poder del cliente y achica las ganancias. Depender tanto de pocos clientes es un riesgo estructural del entorno.' },
+        { texto: 'Proponer el nuevo modelo con IA y cobrar por resultados', detalle: 'En vez de cobrar por hora, cobrar por el valor que genera el proyecto con IA.', puntos: 20, tipo: 'positivo', feedback: 'Cambia la conversación: de “cuánto cuesta la hora” a “qué resultado obtenemos juntos”. Responde al poder del cliente con diferenciación.' },
+        { texto: 'Buscar más clientes medianos para no depender de tan pocos', detalle: 'Diversificar la cartera de clientes a mediano plazo.', puntos: 10, tipo: 'neutro', feedback: 'Es razonable a largo plazo, pero no resuelve la presión inmediata de los clientes que hoy pagan el 40%.' }
+      ]
+    },
+    {
+      titulo: 'Los clientes hacen el trabajo ellos mismos',
+      contexto: 'Herramientas como ChatGPT, GitHub Copilot y plataformas low-code permiten que las empresas hagan internamente lo que antes tercerizaban en Visionant.',
+      problematica: 'PROBLEMA DE CONTEXTO: Visionant pierde proyectos porque los clientes ya no necesitan tantos programadores externos. Si no ofrece algo que ellos no puedan hacer solos, queda fuera del mercado.',
+      casoReal: 'En 2025 muchos clientes de IT redujeron contratos externos porque la IA les permite avanzar con equipos internos más chicos.',
+      pregunta: '¿Cómo responde Visionant a esta amenaza del entorno?',
+      teoria: 'Porter: amenaza de productos sustitutos',
+      opciones: [
+        { texto: 'Posicionarse como experto en implementar IA a escala empresarial', detalle: 'Hacer lo que los clientes no pueden lograr solos con herramientas genéricas.', puntos: 20, tipo: 'positivo', feedback: 'Correcto: el sustituto es la IA usada por el cliente; Visionant debe liderar esa transición, no ignorarla.' },
+        { texto: 'Seguir vendiendo horas de programación tradicional', detalle: 'Apostar al modelo que ya conocen los clientes.', puntos: -15, tipo: 'negativo', feedback: 'El mercado ya se movió. Lo que el cliente puede hacer solo con IA, no lo va a pagar a precio completo.' },
+        { texto: 'Bajar precios drásticamente para retener proyectos básicos', detalle: 'Competir siendo más barato que un equipo interno con IA.', puntos: -15, tipo: 'negativo', feedback: 'Guerra de precios sin fin: márgenes cada vez menores sin ventaja competitiva.' }
+      ]
+    }
+  ],
+
+  problemas: [
+    {
+      titulo: 'La empresa gana cada vez menos',
+      contexto: 'El margen de ganancia de Visionant (lo que queda después de pagar costos) bajó del 6,9% al 4,2%. Eso significa que por cada 100 dólares que factura, le quedan muy pocos de ganancia.',
+      problematica: 'Gastar en la transformación hacia la IA cuesta mucho, pero seguir como antes tampoco funciona. Hay que elegir cómo ordenar los costos sin frenar el cambio necesario.',
+      pregunta: '¿Qué harías para mejorar la situación financiera?',
+      teoria: 'Situación problemática: crisis de rentabilidad',
+      opciones: [
+        { texto: 'Hacer una reestructuración de costos', detalle: 'Recortar gastos innecesarios y reorganizar equipos mientras se avanza hacia el nuevo modelo.', puntos: 20, tipo: 'positivo', feedback: 'Doloroso pero realista: Visionant gastó millones en optimización para alinear costos con la nueva realidad del mercado.' },
+        { texto: 'Postergar el cambio a IA para recuperar ganancias ya', detalle: 'Volver al modelo viejo que daba más plata a corto plazo.', puntos: -15, tipo: 'negativo', feedback: 'Ayuda un trimestre, pero el problema de fondo sigue: el mercado ya no paga igual por horas de programación.' },
+        { texto: 'Invertir todo en IA sin tocar los costos actuales', detalle: 'Apostar fuerte al futuro sin ajustar la estructura de gastos.', puntos: -15, tipo: 'negativo', feedback: 'La dirección es correcta, pero sin ordenar costos al mismo tiempo la empresa puede quedar sin aire financiero.' }
+      ]
+    },
+    {
+      titulo: 'Casi no creció este año',
+      contexto: 'Visionant venía creciendo mucho cada año (más del 15%). En 2025 apenas creció un 1,6%. Los inversores en bolsa empezaron a dudar.',
+      problematica: 'PROBLEMA ORGANIZACIONAL: Si el mercado no cree que el nuevo modelo de IA va a funcionar, la acción baja, cuesta más invertir y la transformación se frena.',
+      pregunta: '¿Qué harías ante esta crisis de crecimiento y credibilidad?',
+      teoria: 'Situación problemática: desaceleración del crecimiento',
+      opciones: [
+        { texto: 'Comunicar al mercado con evidencia concreta', detalle: 'Publicar casos de éxito reales de AI Pods, no solo proyecciones futuras.', puntos: 20, tipo: 'positivo', feedback: 'Correcto: no alcanza con decir que van a cambiar; hay que demostrar que AI Pods ya factura y crece.' },
+        { texto: 'Volver a crecer contratando miles de personas como antes', detalle: 'La fórmula que funcionó en la década pasada.', puntos: -15, tipo: 'negativo', feedback: 'Ese modelo está roto por la IA: más personas ya no significa proporcionalmente más ingresos.' },
+        { texto: 'Recortar investigación y desarrollo para ver mejor los números trimestrales', detalle: 'Gastar menos en innovación para que el balance se vea bien ahora.', puntos: -15, tipo: 'negativo', feedback: 'Mejora un informe puntual, pero debilita la capacidad de innovar justo cuando más se necesita.' }
+      ]
+    },
+    {
+      titulo: 'Agotamiento y renuncias del talento clave',
+      contexto: 'Los empleados expertos en IA son pocos y muy buscados. Visionant compite con Google, Microsoft y otras gigantes que pagan muy bien.',
+      problematica: 'PROBLEMA ORGANIZACIONAL: Muchos trabajadores clave están agotados o se van. Sin ellos, la transformación se frena y la empresa pierde capacidad de ejecutar su plan.',
+      pregunta: '¿Qué harías para que la organización no pierda el talento que necesita para sobrevivir?',
+      teoria: 'Situación problemática: rotación de talento crítico',
+      opciones: [
+        { texto: 'Ofrecer capacitación y nuevos roles en el modelo con IA', detalle: 'Mostrar un camino profesional claro dentro del cambio.', puntos: 20, tipo: 'positivo', feedback: 'Ataca el problema de raíz: la gente necesita ver futuro en la empresa, no solo un sueldo más alto.' },
+        { texto: 'Aumentar los salarios de los perfiles de IA para competir con Google y Microsoft', detalle: 'Sin cambiar nada más en la dinámica laboral.', puntos: 10, tipo: 'neutro', feedback: 'Ayuda un poco, pero no alivia el miedo a que la IA reemplace puestos ni mejora el clima de fondo. El sueldo solo no retiene talento angustiado.' },
+        { texto: 'Tercerizar todo el trabajo de IA a otras empresas', detalle: 'Que externos hagan lo que hoy hacen los equipos internos.', puntos: -15, tipo: 'negativo', feedback: 'Pierde conocimiento interno y depende de terceros para lo más importante del negocio.' }
+      ]
+    },
+    {
+      titulo: 'La acción en bolsa se desploma',
+      contexto: 'Visionant cotiza en la bolsa de Nueva York. En 2025 su acción cayó casi un 58% en el año. Los inversores perdieron confianza.',
+      problematica: 'PROBLEMA ORGANIZACIONAL: El mercado financiero no cree que Visionant pueda transformarse a tiempo. Sin confianza externa, cuesta más invertir y retener talento.',
+      casoReal: 'La caída bursátil reflejó la desaceleración del crecimiento (1,6%) y la caída del margen neto al 4,2%.',
+      pregunta: '¿Qué debe hacer la empresa ante esta crisis de credibilidad?',
+      teoria: 'Situación problemática: presión del mercado de capitales',
+      opciones: [
+        { texto: 'Presentar públicamente resultados concretos de AI Pods', detalle: 'Facturación, clientes ganados y casos medibles, no solo el discurso de transformación.', puntos: 20, tipo: 'positivo', feedback: 'El mercado necesita evidencia, no solo discurso. Los casos de éxito públicos restauran confianza.' },
+        { texto: 'Ocultar los malos números y enfocarse solo en el futuro', detalle: 'No hablar del presente difícil, solo de Visión 2030.', puntos: -15, tipo: 'negativo', feedback: 'Los inversores leen los reportes financieros. La falta de transparencia empeora la desconfianza.' },
+        { texto: 'Cancelar la transformación para calmar a la bolsa', detalle: 'Volver al modelo viejo que los inversores conocían.', puntos: -15, tipo: 'negativo', feedback: 'Sería el peor mensaje: el mercado castigaría aún más a una empresa que abandona su apuesta.' }
+      ]
+    }
+  ],
+
+  cultura: [
+    {
+      titulo: '“Cuidar a las personas” vs recortes',
+      contexto: 'Visionant siempre promovió valores como “Be Kind” (ser amable, cuidar a la gente) y crecer sumando empleados. Los empleados se llaman “Visioners”.',
+      problematica: 'En 2025 la empresa despidió a cerca de 1.000 personas por la transformación hacia la IA. Los empleados sienten que lo que decía la cultura no coincide con lo que hace la empresa.',
+      pregunta: '¿Cómo alinear la cultura con la nueva estrategia?',
+      teoria: 'Modelo 7S: tensión entre estrategia y valores compartidos',
+      opciones: [
+        { texto: 'Reformular el relato cultural sobre “Be Kind”', detalle: 'Explicar que potenciar a las personas con IA y ofrecer reconversión concreta importa más que conservar puestos a toda costa.', puntos: 20, tipo: 'positivo', feedback: 'Es la recomendación clave: sin este cambio de relato, la cultura y la estrategia chocan y la gente no confía.' },
+        { texto: 'Seguir diciendo que la gente es lo primero mientras se recorta por detrás', detalle: 'Mantener el discurso antiguo aunque las acciones digan otra cosa.', puntos: -15, tipo: 'negativo', feedback: 'La hipocresía destruye la confianza. “Be Kind” deja de tener sentido si no hay coherencia.' },
+        { texto: 'Sacar los valores y manejar todo solo con números y metas financieras', detalle: 'Eliminar la cultura informal y enfocarse solo en resultados económicos.', puntos: -15, tipo: 'negativo', feedback: 'Tira abajo lo que hacía fuerte a Visionant: aprendizaje, trabajo en equipo y espíritu emprendedor.' }
+      ]
+    },
+    {
+      titulo: 'Cultura perdida al crecer',
+      contexto: 'Visionant compró más de 25 empresas entre 2018 y 2024 y pasó de 10.000 a 31.000 empleados. Cada empresa comprada tenía su propia forma de trabajar.',
+      problematica: 'Muchos empleados nuevos nunca vivieron la cultura original. Cada equipo trabaja distinto y la identidad común se diluye.',
+      pregunta: '¿Cómo mantener una cultura compartida con tanta gente?',
+      teoria: 'Cultura organizacional y crecimiento por adquisiciones',
+      opciones: [
+        { texto: 'Diseñar un proceso de onboarding cultural explícito', detalle: 'Transmitir valores, rituales y formas de trabajo de manera activa a todos los que se incorporan, incluidos los de empresas adquiridas.', puntos: 20, tipo: 'positivo', feedback: 'Correcto: con 31.000 personas hace falta ser explícito sobre cómo se trabaja y qué se valora.' },
+        { texto: 'Dejar que cada oficina o equipo haga lo que quiera', detalle: 'No intervenir en las diferencias culturales entre áreas.', puntos: -15, tipo: 'negativo', feedback: 'Genera equipos aislados que no colaboran y pierden identidad común.' },
+        { texto: 'Imponer una sola forma de trabajar desde la central sin excepciones', detalle: 'Eliminar la autonomía que tenían los equipos.', puntos: -15, tipo: 'negativo', feedback: 'Mata la flexibilidad que permitió crecer. Hay que integrar sin rigidizar todo.' }
+      ]
+    },
+    {
+      titulo: '“Divertirse en el trabajo” en tiempos difíciles',
+      contexto: 'Visionant tiene espacios de juego en las oficinas (ping pong, videojuegos) y el valor “Have Fun” invita a disfrutar el trabajo.',
+      problematica: 'Después de despidos y reestructuraciones, muchos empleados sienten que esas cosas son incómodas o hasta ofensivas.',
+      pregunta: '¿Cómo manejar los símbolos culturales en un momento de crisis?',
+      teoria: 'Cultura organizacional: valores y coherencia',
+      opciones: [
+        { texto: 'Priorizar espacios de escucha y empatía antes que los símbolos de “diversión”', detalle: 'Reuniones honestas, canales de diálogo abierto, y postponer eventos lúdicos hasta que el clima lo permita.', puntos: 20, tipo: 'positivo', feedback: 'La cultura tiene que leer el momento: primero cuidar a la gente, después los gestos simbólicos.' },
+        { texto: 'Ignorar las quejas y seguir igual', detalle: 'No cambiar nada en los espacios ni en el discurso.', puntos: -15, tipo: 'negativo', feedback: 'Parece que la dirección no entiende lo que viven los empleados. Eso aleja más a la gente.' },
+        { texto: 'Sacar todos los beneficios y espacios lúdicos para ahorrar', detalle: 'Eliminar ping pong, eventos y perks culturales.', puntos: -15, tipo: 'negativo', feedback: 'Ahorra poco pero daña mucho la identidad y la motivación del equipo.' }
+      ]
+    },
+    {
+      titulo: 'Valores en papel vs hechos reales',
+      contexto: '“Be Kind” promueve empatía y cuidado. Tras los recortes del 3% de la plantilla, muchos empleados sienten que la empresa actuó sin el trato que prometen los valores.',
+      problematica: 'PROBLEMA CULTURAL: Los empleados perciben que el valor más importante de Visionant quedó en la pared, no en las decisiones. La cultura pierde sentido.',
+      casoReal: 'Tras los despidos, encuestas internas mostraron caída fuerte en la confianza en los valores corporativos, especialmente en “Be Kind”.',
+      pregunta: '¿Cómo recuperar credibilidad cultural después de esta contradicción?',
+      teoria: 'Modelo 7S: valores compartidos vs estrategia',
+      opciones: [
+        { texto: 'Demostrar con acciones que “Be Kind” sigue vigente', detalle: 'Acompañamiento real en desvinculaciones, comunicación honesta de cada decisión difícil, no solo el discurso.', puntos: 20, tipo: 'positivo', feedback: 'La cultura se prueba en las crisis, no en los buenos momentos.' },
+        { texto: 'No hablar de valores hasta que pase la tormenta', detalle: 'Evitar mencionar “Be Kind” mientras hay recortes.', puntos: -15, tipo: 'negativo', feedback: 'Callar sobre valores confirma que ya no aplican. Eso daña más que hablar con honestidad.' },
+        { texto: 'Eliminar “Be Kind” del discurso corporativo', detalle: 'Sacar el valor que ya no se puede sostener.', puntos: -15, tipo: 'negativo', feedback: 'Renunciar al valor admite derrota cultural. Mejor redefinirlo con acciones coherentes.' }
+      ]
+    }
+  ],
+
+  estructura: [
+    {
+      titulo: 'Demasiados equipos chicos sin resultados',
+      contexto: 'Visionant organiza su trabajo en “Studios” (equipos especializados por industria, como salud o banca) y en “Pods” (grupos chicos que trabajan en un cliente).',
+      problematica: 'Hay muchos Studios que facturan poco, repiten trabajo entre sí y los empleados no saben bien a quién reportar porque tienen dos jefes (doble reporte).',
+      pregunta: '¿Cómo reorganizar para que sea más claro y eficiente?',
+      teoria: 'Estructura matricial: coordinación y responsabilidades',
+      opciones: [
+        { texto: 'Consolidar Studios: reducir equipos especializados', detalle: 'Concentrar recursos en los que ya tienen clientes reales y masa crítica.', puntos: 20, tipo: 'positivo', feedback: 'Reduce confusión y costos de coordinación. Menos equipos con más foco es lo que recomienda el análisis del grupo sobre Visionant.' },
+        { texto: 'Crear un Studio nuevo por cada industria posible', detalle: 'Multiplicar equipos especializados sin importar si tienen clientes.', puntos: -15, tipo: 'negativo', feedback: 'Más fragmentación, más duplicación de trabajo y nadie con masa crítica para ser realmente experto.' },
+        { texto: 'Separar a todos por función: programadores acá, diseñadores allá', detalle: 'Organizar solo por tipo de trabajo, no por cliente ni industria.', puntos: -15, tipo: 'negativo', feedback: 'Pierde la agilidad de los equipos multidisciplinarios que armaban soluciones completas para cada cliente.' }
+      ]
+    },
+    {
+      titulo: 'Dos jefes, una decisión',
+      contexto: 'En Visionant un empleado puede tener un jefe del Studio (equipo técnico) y otro del cliente o industria. Eso se llama estructura matricial.',
+      problematica: 'PROBLEMA ESTRUCTURAL: Un líder de Studio y un líder de cuenta no se ponen de acuerdo sobre las prioridades de un cliente importante. El equipo no sabe a quién obedecer y el proyecto se frena.',
+      pregunta: '¿Cómo debería diseñarse la estructura para resolver este bloqueo?',
+      teoria: 'Estructura matricial: autoridad y responsabilidades claras',
+      opciones: [
+        { texto: 'Definir un “dueño del resultado” claro para cada proyecto', detalle: 'Una sola persona con autoridad final sobre las prioridades del cliente, aunque el otro líder siga siendo referencia técnica.', puntos: 20, tipo: 'positivo', feedback: 'Correcto en diseño estructural: cuando hay doble reporte, alguien tiene que tener la última palabra.' },
+        { texto: 'Dejar que el equipo resuelva solo sin reglas claras', detalle: 'No definir autoridades y esperar que se arreglen.', puntos: -15, tipo: 'negativo', feedback: 'Sin reglas estructurales, el conflicto se repite en cada proyecto.' },
+        { texto: 'Escalar cada conflicto al CEO', detalle: 'Que el director general decida todo caso por caso.', puntos: -15, tipo: 'negativo', feedback: 'Con 31.000 empleados es inviable. La estructura debe resolver esto con reglas, no con escalamiento.' }
+      ]
+    },
+    {
+      titulo: 'Proyectos duplicados entre Studios',
+      contexto: 'En la estructura matricial, un mismo cliente puede ser atendido por un Pod y por un Studio distinto, sin coordinación clara entre ellos.',
+      problematica: 'PROBLEMA ESTRUCTURAL: Dos equipos resuelven el mismo problema con enfoques distintos. Se duplica esfuerzo, suben los costos y el cliente recibe propuestas incoherentes.',
+      pregunta: '¿Cómo reorganizar roles para evitar duplicación entre equipos?',
+      teoria: 'Estructura matricial: delimitación de responsabilidades',
+      opciones: [
+        { texto: 'Asignar un responsable único por cliente y un catálogo de servicios compartido', detalle: 'Cada cuenta tiene un dueño claro; los demás equipos apoyan, no compiten.', puntos: 20, tipo: 'positivo', feedback: 'Reduce solapamientos estructurales: un cliente, una voz, varios equipos coordinados.' },
+        { texto: 'Dejar que los equipos compitan internamente por el mismo cliente', detalle: 'Quien cierre primero se queda con el proyecto.', puntos: -15, tipo: 'negativo', feedback: 'Genera guerras internas, propuestas contradictorias y desgaste entre áreas.' },
+        { texto: 'Centralizar todos los Pods en un solo departamento', detalle: 'Eliminar la estructura matricial y volver a un organigrama tradicional.', puntos: -15, tipo: 'negativo', feedback: 'Pierde la agilidad y el expertise por industria que justificaba la estructura matricial.' }
+      ]
+    },
+    {
+      titulo: 'Cierre de oficinas en Argentina',
+      contexto: 'En 2025 Visionant cerró oficinas en Ushuaia y Resistencia como parte del plan de optimización. Se comunicó como “reorganización”, no como despidos.',
+      problematica: 'PROBLEMA ESTRUCTURAL: Los empleados de esas ciudades perdieron su trabajo. El mensaje contradijo lo que vivieron las personas afectadas y dañó la confianza en toda la empresa.',
+      casoReal: 'El cierre regional ocurrió en el mismo período que los despidos globales del 3% de la plantilla, generando percepción de recortes encubiertos.',
+      pregunta: '¿Cómo debería gestionarse un rediseño estructural de esta magnitud?',
+      teoria: 'Estructura organizacional y redimensionamiento',
+      opciones: [
+        { texto: 'Gestionar el cierre con comunicación honesta', detalle: 'Llamarlo por su nombre, ofrecer relocalización donde sea posible y garantizar una salida digna.', puntos: 20, tipo: 'positivo', feedback: 'La estructura cambia, pero las personas no son descartables: claridad y respeto reducen el daño reputacional y cultural.' },
+        { texto: 'Varios cierres chicos en tandas para que no se note', detalle: 'Recortes graduales sin anuncio global.', puntos: -15, tipo: 'negativo', feedback: 'Varias olas generan miedo permanente en los 31.000 empleados.' },
+        { texto: 'Mantener oficinas abiertas aunque estén vacías', detalle: 'Seguir pagando locales para evitar el conflicto.', puntos: -15, tipo: 'negativo', feedback: 'Con margen al 4,2% no se pueden mantener costos fijos sin uso.' }
+      ]
+    }
+  ],
+
+  liderazgo: [
+    {
+      titulo: 'Rumores de despidos',
+      contexto: 'Visionant está en medio de una gran reestructuración. El CEO es uno de los fundadores y tiene mucha credibilidad histórica en la empresa.',
+      problematica: 'Circulan rumores de despidos. La prensa habla. Los empleados esperan una palabra clara de la dirección. En el pasado, Visionant negó rumores y días después confirmó recortes.',
+      pregunta: '¿Cómo debería comunicar el liderazgo esta situación?',
+      teoria: 'Liderazgo y gestión del cambio',
+      opciones: [
+        { texto: 'Negar y luego contradecirse: negar rumores y confirmar recortes días después', detalle: 'Negar públicamente los rumores de despidos y, días después, confirmar los recortes sin mayor explicación.', puntos: -15, tipo: 'negativo', feedback: 'Eso pasó de verdad en Visionant y destruyó la confianza. La gente no cree más al liderazgo cuando la palabra no coincide con los hechos.' },
+        { texto: 'Hablar con honestidad: qué va a pasar, por qué y cuál es el plan', detalle: 'El CEO frente a todos, con transparencia.', puntos: 20, tipo: 'positivo', feedback: 'Correcto: en momentos difíciles, la honestidad del líder es lo que mantiene a la organización unida.' },
+        { texto: 'Mandar a Recursos Humanos a comunicar sin participación del CEO', detalle: 'Que RR.HH. dé la noticia en un mail genérico.', puntos: -15, tipo: 'negativo', feedback: 'En cambios grandes, si el jefe máximo no aparece, parece que no le importa.' }
+      ]
+    },
+    {
+      titulo: 'La gente no ve resultados del cambio',
+      contexto: 'Después de los recortes, el ambiente laboral está tenso. Visionant lanzó AI Pods (equipos con IA que automatizan tareas), pero muchos empleados no ven cómo funciona en la práctica.',
+      problematica: 'Solo se sienten los recortes, no los avances. Sin pruebas de que el nuevo modelo funciona, la gente se resiste o se va.',
+      pregunta: '¿Qué debería hacer el liderazgo para generar confianza?',
+      teoria: 'Liderazgo del cambio: victorias tempranas (Kotter)',
+      opciones: [
+        { texto: 'Mostrar victorias tempranas concretas de AI Pods', detalle: 'Comunicar internamente casos reales ya funcionando (YPF, LALIGA, Riot Games) para que los empleados vean que el cambio no es solo discurso.', puntos: 20, tipo: 'positivo', feedback: 'La gente necesita ver que el cambio funciona, no solo escuchar promesas para 2030. Las victorias tempranas son la clave del modelo Kotter.' },
+        { texto: 'Solo mostrar proyecciones financieras lejanas', detalle: 'Presentar números y metas para dentro de 5 años.', puntos: 10, tipo: 'neutro', feedback: 'Las metas a largo plazo importan, pero sin ejemplos concretos hoy, nadie se convence.' },
+        { texto: 'Prometer que no habrá más cambios ni recortes', detalle: 'Dar seguridad total aunque no se pueda garantizar.', puntos: -15, tipo: 'negativo', feedback: 'Si luego hay otro recorte, la credibilidad del liderazgo queda destruida.' }
+      ]
+    },
+    {
+      titulo: 'Resistencia a la reorganización por industria',
+      contexto: 'Históricamente Visionant se organizaba por países y regiones. En 2025 el CEO decidió reorganizarse por tipo de industria (salud, banca, gaming, etc.).',
+      problematica: 'PROBLEMA DE LIDERAZGO: Gerentes regionales con años de trayectoria resisten perder poder. El equipo no entiende el cambio y la dirección necesita arrastrar a la organización sin fracturarla.',
+      pregunta: '¿Cómo debería liderar el CEO esta reorganización?',
+      teoria: 'Liderazgo del cambio: gestión de resistencia y comunicación',
+      opciones: [
+        { texto: 'Comunicar claramente el motivo del cambio y escuchar a los líderes', detalle: 'Explicar que la reorganización por industria alinea el modelo de IA con expertise sectorial, no con geografía.', puntos: 20, tipo: 'positivo', feedback: 'El liderazgo combina visión clara con escucha: reduce resistencia y acelera la adopción del nuevo diseño.' },
+        { texto: 'Mantener las dos formas de organizarse para no generar conflictos', detalle: 'Por país Y por industria, para no molestar a nadie.', puntos: -15, tipo: 'negativo', feedback: 'Evitar el conflicto no es liderar: la ambigüedad paraliza decisiones y confunde a los equipos.' },
+        { texto: 'Imponer el cambio de arriba abajo sin diálogo', detalle: 'Decidir y listo, sin escuchar objeciones.', puntos: 10, tipo: 'neutro', feedback: 'Puede funcionar un tiempo, pero sin liderazgo participativo la resistencia crece en silencio.' }
+      ]
+    },
+    {
+      titulo: 'La carta del fundador',
+      contexto: 'Martín Migoya, CEO y cofundador, envió una carta interna: “el mundo cambió y nosotros también debemos cambiar”. Llegó tras semanas de rumores y negaciones.',
+      problematica: 'PROBLEMA DE LIDERAZGO: El mensaje del fundador llegó tarde y sin credibilidad. La gente ya no confiaba cuando finalmente habló el líder máximo.',
+      casoReal: 'Migoya usó su legitimidad de fundador para empujar la transformación, pero la secuencia de negar rumores y luego confirmar despidos debilitó el impacto.',
+      pregunta: '¿Qué debería haber hecho diferente el liderazgo?',
+      teoria: 'Liderazgo transformacional y comunicación en crisis',
+      opciones: [
+        { texto: 'Anticipar el mensaje antes de que circulen los rumores', detalle: 'El CEO comunica el proceso de cambio con honestidad sobre lo que viene y por qué.', puntos: 20, tipo: 'positivo', feedback: 'El liderazgo fundador es un activo solo si la palabra coincide con los hechos. Anticipar es liderar; reaccionar es apagar incendios.' },
+        { texto: 'Enviar solo un mail formal sin diálogo', detalle: 'Comunicación escrita, fría, sin espacio para preguntas.', puntos: -15, tipo: 'negativo', feedback: 'En crisis existenciales la gente necesita ver al líder, no solo leer un comunicado.' },
+        { texto: 'No decir nada hasta que todo esté terminado', detalle: 'Actuar en silencio hasta que no haya vuelta atrás.', puntos: -15, tipo: 'negativo', feedback: 'El vacío lo llenan los rumores, que suelen ser peores que la realidad.' }
+      ]
+    }
+  ],
+
+  conflictos: [
+    {
+      titulo: 'Jefes que no quieren cambiar',
+      contexto: 'Visionant quiere pasar al modelo AI Pods: equipos más chicos con IA que hacen el trabajo que antes hacían muchas personas.',
+      problematica: 'Los gerentes de Studios grandes resisten porque pierden presupuesto, equipos y poder dentro de la empresa. Es un conflicto político interno.',
+      pregunta: '¿Cómo gestionar la resistencia de los líderes?',
+      teoria: 'Resistencia al cambio y conflicto organizacional',
+      opciones: [
+        { texto: 'Involucrar a los gerentes resistentes como co-diseñadores del nuevo modelo', detalle: 'Que lideren la transición de sus propios Studios hacia AI Pods en vez de quedar fuera del proceso.', puntos: 20, tipo: 'positivo', feedback: 'Convierte enemigos del cambio en aliados. Cuando ganan con el nuevo modelo, lo defienden.' },
+        { texto: 'Ignorarlos y avanzar por decreto', detalle: 'Imponer el cambio sin escuchar sus objeciones.', puntos: -15, tipo: 'negativo', feedback: 'Genera sabotaje silencioso: la gente obedece en público pero frena en privado.' },
+        { texto: 'Sacarlos de todo proyecto importante', detalle: 'Aislar a quienes se resisten.', puntos: -15, tipo: 'negativo', feedback: 'Empeora la pelea interna y pierde experiencia valiosa de la empresa.' }
+      ]
+    },
+    {
+      titulo: 'Miedo a que la IA quite el trabajo',
+      contexto: 'Los programadores de Visionant están construyendo agentes de IA que automatizan tareas que antes hacían personas. El sindicato de IT pide garantías.',
+      problematica: 'Los empleados temen perder su puesto. Ese miedo genera conflictos, baja motivación y renuncias de los más capacitados.',
+      pregunta: '¿Cómo negociar con los empleados y el sindicato?',
+      teoria: 'Conflicto social: tecnología y empleo',
+      opciones: [
+        { texto: 'Abrir un proceso participativo con el sindicato', detalle: 'Que los empleados ayuden a definir cómo se implementa la IA, qué roles cambian y cuáles se crean, con garantías formales de reconversión.', puntos: 20, tipo: 'positivo', feedback: 'Correcto: quien construye la IA necesita sentir que también tiene futuro en la empresa. La co-construcción reduce el conflicto más que cualquier comunicado.' },
+        { texto: 'Decir que la IA no va a afectar ningún empleo', detalle: 'Negar que haya impacto cuando ya hubo despidos.', puntos: -15, tipo: 'negativo', feedback: 'Nadie lo cree si ya despidieron al 3% de la plantilla. La mentira empeora el conflicto.' },
+        { texto: 'Responder solo con un comunicado legal frío', detalle: 'Un documento formal sin diálogo ni reuniones.', puntos: -15, tipo: 'negativo', feedback: 'Evita la conversación. Los conflictos sociales necesitan escucha, no solo papeles legales.' }
+      ]
+    },
+    {
+      titulo: 'Segunda ola de despidos',
+      contexto: 'En el mismo año hubo dos rondas de despidos. Los empleados sienten que la empresa reacciona al pánico del mercado, no que tiene un plan claro.',
+      problematica: 'CONFLICTO ORGANIZACIONAL: La confianza entre empleados y dirección está rota. La gente vive con miedo de una tercera ronda y eso genera tensión, desconfianza y baja colaboración.',
+      pregunta: '¿Cómo gestionar el conflicto y la desconfianza tras tantos recortes?',
+      teoria: 'Conflicto organizacional: confianza y clima post-recorte',
+      opciones: [
+        { texto: 'Presentar un plan de reorganización único y completo', detalle: 'Una sola reestructuración planificada con principio y fin claro, en vez de recortes en tandas que generan miedo permanente.', puntos: 20, tipo: 'positivo', feedback: 'No borra el dolor, pero al menos da un horizonte. Dos rondas parecen improvisación; un plan estructurado parece estrategia.' },
+        { texto: 'Anunciar que puede haber una tercera ronda “por las dudas”', detalle: 'Adelantar más recortes para “ser transparentes”.', puntos: -15, tipo: 'negativo', feedback: 'Parálisis total: nadie rinde si vive con miedo permanente.' },
+        { texto: 'Compartir abiertamente las metas y cuánto tiempo queda de ajuste', detalle: 'Decir con números hacia dónde va la empresa y cuándo termina la transición.', puntos: 20, tipo: 'positivo', feedback: 'La información reduce la ansiedad. Incluye transparencia activa, no solo orden en el proceso. La gente aguanta el cambio si entiende el destino.' }
+      ]
+    },
+    {
+      titulo: 'Construyen su propio reemplazo',
+      contexto: 'Los programadores de Visionant crean agentes de IA que automatizan tareas que antes hacían personas, mientras la empresa despidió al 3% de la plantilla.',
+      problematica: 'PROBLEMA DE CONFLICTO: Los empleados sienten que arman la herramienta que los va a reemplazar. Eso genera resentimiento, baja productividad y renuncias.',
+      casoReal: 'Los mismos Visioners que desarrollan AI Pods son los que perciben amenazado su puesto: un conflicto social único en el sector IT.',
+      pregunta: '¿Cómo resolver el conflicto entre personas y automatización?',
+      teoria: 'Conflicto social: tecnología, empleo y negociación',
+      opciones: [
+        { texto: 'Dar a los programadores un rol activo en definir su propio futuro', detalle: 'Quienes automatizan tareas también diseñan los nuevos puestos que surgirán del cambio.', puntos: 20, tipo: 'positivo', feedback: 'Convierte el conflicto en participación. La gente acepta mejor el cambio si lo co-crea. Además, reduce la alienación: no estás construyendo tu reemplazo, estás construyendo tu próximo rol.' },
+        { texto: 'Pedir que desarrollen IA sin hablar del impacto en empleos', detalle: 'Separar el trabajo técnico de la conversación sobre puestos.', puntos: -15, tipo: 'negativo', feedback: 'Imposible separar: la gente ve el impacto en su día a día.' },
+        { texto: 'Bonos por productividad sin cambiar los puestos', detalle: 'Pagar más a quien produce más con IA.', puntos: 10, tipo: 'neutro', feedback: 'Ayuda temporalmente a retener talento, pero no responde la pregunta de fondo: ¿cuál es el futuro del empleo en Visionant? Sin un relato claro sobre el nuevo rol de las personas, el bono compra tiempo, no confianza.' }
+      ]
+    }
+  ],
+
+  innovacion: [
+    {
+      titulo: '¿Lanzar un producto que compite con vos mismo?',
+      contexto: 'AI Pods es el nuevo servicio de Visionant: equipos chicos con inteligencia artificial que hacen en horas lo que antes llevaba semanas. Se cobra por suscripción, no por horas de trabajo.',
+      problematica: 'Si AI Pods funciona bien, los clientes van a necesitar menos horas del modelo viejo. Visionant podría perder ingresos de su negocio actual. Pero si no lo hace, lo hará un competidor.',
+      pregunta: '¿Lanzar AI Pods aunque canibalice el negocio tradicional?',
+      teoria: 'Innovación disruptiva y canibalización',
+      opciones: [
+        { texto: 'Lanzar AI Pods con decisión, aunque canibalice el modelo por horas', detalle: 'Si Visionant no canibaliza su propio negocio, lo hará un competidor. Mejor liderar la disrupción desde adentro.', puntos: 20, tipo: 'positivo', feedback: 'Inteligente: Visionant eligió crear su propio reemplazo antes que otro se lo coma. Eso es visión estratégica aplicada a innovación disruptiva.' },
+        { texto: 'No, proteger el modelo por horas el mayor tiempo posible', detalle: 'Seguir facturando como siempre hasta que no quede otra.', puntos: -15, tipo: 'negativo', feedback: 'La IA no espera. Retrasar el cambio solo regala clientes a la competencia.' },
+        { texto: 'Probar solo con 2 clientes y no escalar', detalle: 'Hacer un experimento chico sin comprometerse de verdad.', puntos: 10, tipo: 'neutro', feedback: 'Prudente, pero el mercado necesita ver que Visionant va en serio, no solo que experimenta.' }
+      ]
+    },
+    {
+      titulo: 'El cliente quiere seguir pagando por horas',
+      contexto: 'Visionant quiere cobrar por uso de IA (tokens/consumo) en vez de por horas de programador. Un cliente muy grande prefiere el sistema viejo.',
+      problematica: 'El equipo comercial presiona para aceptar lo que pide el cliente y no perder el contrato. Pero si aceptan, retrasan el cambio de modelo de toda la empresa.',
+      pregunta: '¿Qué le proponés a ese cliente?',
+      teoria: 'Innovación en el modelo de negocio',
+      opciones: [
+        { texto: 'Proponer un modelo híbrido de transición', detalle: 'Mantener parte del esquema por horas durante un período acordado, mientras se introduce gradualmente el cobro por tokens/consumo de IA.', puntos: 20, tipo: 'positivo', feedback: 'Equilibrio inteligente: no perdés al cliente ni frenás la transformación para siempre. Es un puente, no una capitulación.' },
+        { texto: 'Aceptar cobrar solo por horas sin condiciones', detalle: 'Ceder totalmente para no arriesgar la cuenta.', puntos: -15, tipo: 'negativo', feedback: 'Retiene al cliente hoy, pero refuerza el modelo que Visionant necesita dejar atrás.' },
+        { texto: 'Exigir el modelo nuevo desde el primer día, sin excepciones', detalle: 'Todo o nada: tokens desde ya o nada.', puntos: 10, tipo: 'neutro', feedback: 'Correcto en teoría, pero arriesgado: el cliente puede irse a un competidor más flexible.' }
+      ]
+    },
+    {
+      titulo: 'Una plataforma para toda la IA',
+      contexto: 'GEAI es la plataforma interna de Visionant para conectar y manejar todas sus herramientas de inteligencia artificial.',
+      problematica: 'Cada área de la empresa inventa su propia herramienta de IA. Se pierde tiempo, plata y no se aprende entre equipos.',
+      pregunta: '¿Cómo organizar la innovación en IA?',
+      teoria: 'Aprendizaje organizacional e infraestructura compartida',
+      opciones: [
+        { texto: 'Implementar GEAI como infraestructura compartida de IA', detalle: 'Un único lugar donde se conectan proyectos, agentes y aprendizajes de todos los equipos.', puntos: 20, tipo: 'positivo', feedback: 'Sin plataforma común no hay escala. GEAI es lo que une AI Pods, Studios y el modelo de cobro. La innovación distribuida necesita infraestructura centralizada para no fragmentarse.' },
+        { texto: 'Dejar que cada equipo innove por su cuenta', detalle: 'Sin coordinación central en temas de IA.', puntos: -15, tipo: 'negativo', feedback: 'Cada uno repite errores y no comparte avances. Innovar sin integrar es caro y lento.' },
+        { texto: 'Comprar una startup de IA y dejar de usar la plataforma interna', detalle: 'Reemplazar GEAI con tecnología externa.', puntos: 10, tipo: 'neutro', feedback: 'Puede servir si se integra bien, pero no es automáticamente mejor que desarrollar adentro.' }
+      ]
+    },
+    {
+      titulo: 'Innovar sin frenar la operación diaria',
+      contexto: 'Visionant necesita desarrollar AI Pods y GEAI, pero el 90% de los ingresos sigue viniendo del negocio tradicional por horas.',
+      problematica: 'PROBLEMA DE INNOVACIÓN: Los equipos comerciales quieren que todos los mejores talentos sigan en proyectos facturables. La innovación compite por tiempo y presupuesto con la operación que paga las cuentas.',
+      pregunta: '¿Cómo organizar la innovación sin matar el negocio actual?',
+      teoria: 'Innovación: ambidestreza organizacional (explotar vs explorar)',
+      opciones: [
+        { texto: 'Crear equipos de innovación separados con presupuesto y metas propias', detalle: 'AI Pods y GEAI avanzan en paralelo, sin robar recursos críticos a los clientes actuales.', puntos: 20, tipo: 'positivo', feedback: 'Correcto: la innovación disruptiva necesita espacio protegido. Sin ambidestreza, el corto plazo siempre gana.' },
+        { texto: 'Usar solo el tiempo libre de los consultores entre proyectos', detalle: 'Innovar cuando no hay facturación, sin presupuesto dedicado.', puntos: -15, tipo: 'negativo', feedback: 'La innovación queda siempre en segundo plano. El mercado de IA no espera a que sobre tiempo.' },
+        { texto: 'Pausar la innovación hasta estabilizar los ingresos por horas', detalle: 'Priorizar solo el negocio que factura hoy.', puntos: -15, tipo: 'negativo', feedback: 'Congela la transformación. Cuando vuelvas a innovar, la competencia ya definió el estándar.' }
+      ]
+    }
+  ],
+
+  desafios: [
+    {
+      titulo: '¿Seguir comprando empresas?',
+      contexto: 'Entre 2018 y 2024 Visionant compró más de 25 empresas para crecer rápido. Pasó de 10.000 a 31.000 empleados, pero muchas integraciones fallaron y los costos quedaron altos.',
+      problematica: 'DESAFÍO ESTRATÉGICO: Visionant debe definir cómo va a crecer en los próximos años: ¿sigue comprando empresas, busca alianzas o cambia de rumbo?',
+      pregunta: '¿Cuál debería ser la estrategia de crecimiento a largo plazo?',
+      teoria: 'Desafío estratégico: política de expansión y alianzas',
+      opciones: [
+        { texto: 'Priorizar alianzas estratégicas sobre adquisiciones', detalle: 'Asociarse con empresas especializadas en lugar de comprarlas, para crecer en capacidades sin cargar con los costos de integración.', puntos: 20, tipo: 'positivo', feedback: 'Más barato y más ágil que seguir comprando. Es lo que Visionant está haciendo ahora para ganar capacidades en IA sin repetir los problemas de integración del período 2018-2024.' },
+        { texto: 'Seguir comprando empresas para sumar empleados y crecer', detalle: 'La misma estrategia de los últimos años.', puntos: -15, tipo: 'negativo', feedback: 'Esa fórmula quedó expuesta en 2025: mucho costo, integración difícil y crecimiento que ya no rinde igual.' },
+        { texto: 'Comprar solo empresas chicas especializadas en IA', detalle: 'Adquisiciones selectivas en inteligencia artificial, no en cualquier rubro.', puntos: 20, tipo: 'positivo', feedback: 'Más enfocado que comprar por geografía. Tiene sentido si se integra bien lo que se compra.' }
+      ]
+    },
+    {
+      titulo: 'Meta ambiciosa para el nuevo negocio',
+      contexto: 'AI Pods (el servicio con IA por suscripción) factura unos 20 millones de dólares al año. La meta para 2026 es llegar a entre 60 y 100 millones.',
+      problematica: 'DESAFÍO ESTRATÉGICO: Visionant debe decidir dónde concentrar recursos para cumplir una meta que define si el nuevo modelo de negocio es viable o no.',
+      pregunta: '¿Qué decisión estratégica tomarías para alcanzar la meta de AI Pods?',
+      teoria: 'Desafío estratégico: portafolio de negocios y foco sectorial',
+      opciones: [
+        { texto: 'Concentrar los esfuerzos de AI Pods en sectores donde ya hay clientes y experiencia', detalle: 'Gaming, finanzas y salud, en vez de dispersarse en industrias nuevas sin trayectoria.', puntos: 20, tipo: 'positivo', feedback: 'Correcto: mostrar resultados reales en sectores conocidos es más convincente para inversores y clientes que prometer en todos lados sin profundidad.' },
+        { texto: 'Lanzar AI Pods en todas las industrias al mismo tiempo', detalle: 'Estar en todos lados a la vez.', puntos: -15, tipo: 'negativo', feedback: 'Sin recursos suficientes en cada sector, todo queda a medias y nada destaca.' },
+        { texto: 'Bajar la meta para no fallar públicamente', detalle: 'Reducir la ambición para cumplir números más fáciles.', puntos: -15, tipo: 'negativo', feedback: 'El mercado lo lee como debilidad. Mejor ejecutar que bajar expectativas sin motivo.' }
+      ]
+    },
+    {
+      titulo: 'Visión 2030 vs realidad de hoy',
+      contexto: 'Visionant planteó una “Visión 2030” para ser líder en servicios con IA. Pero en 2025 su acción en bolsa cayó casi un 58%.',
+      problematica: 'DESAFÍO ESTRATÉGICO: Hay que decidir si Visionant mantiene su apuesta de largo plazo, la reformula o abandona la ambición que definió su futuro.',
+      pregunta: '¿Cómo sostener (o redefinir) la apuesta estratégica de largo plazo?',
+      teoria: 'Desafío estratégico: visión, escenarios futuros y coherencia',
+      opciones: [
+        { texto: 'Sostener la Visión 2030 pero anclarla en evidencia trimestral', detalle: 'Mostrar con números y casos concretos que se avanza paso a paso, sin abandonar la ambición de largo plazo.', puntos: 20, tipo: 'positivo', feedback: 'Coherencia + transparencia. El mercado espera resultados, pero valora que muestres progreso real. La visión sin tracción es solo marketing; la tracción sin visión es solo supervivencia.' },
+        { texto: 'Volver al negocio tradicional hasta que pase “la moda de la IA”', detalle: 'Abandonar la apuesta por IA y volver a cobrar por horas.', puntos: -15, tipo: 'negativo', feedback: 'La IA no es una moda pasajera: es un cambio estructural del sector. Volver atrás sería quedar fuera del mercado.' },
+        { texto: 'Vender divisiones que no son core para financiar la transformación', detalle: 'Desprenderse de partes del negocio para invertir en IA.', puntos: 10, tipo: 'neutro', feedback: 'Puede tener sentido, pero hay que analizar bien qué se vende para no debilitar áreas que sí aportan.' }
+      ]
+    },
+    {
+      titulo: '¿Diversificar fuera de Norteamérica?',
+      contexto: 'El 55% de los ingresos de Visionant vienen de Estados Unidos y Canadá. Aranceles, recesión o cambios regulatorios en ese mercado impactan más de la mitad del negocio.',
+      problematica: 'DESAFÍO ESTRATÉGICO: Visionant debe decidir su rumbo geográfico para los próximos años: ¿sigue concentrada en Norteamérica o construye un futuro más equilibrado?',
+      casoReal: 'En 2025 la incertidumbre arancelaria alargó los ciclos de venta y redujo la disposición de clientes a firmar contratos largos.',
+      pregunta: '¿Qué camino estratégico elegirías para reducir la dependencia geográfica?',
+      teoria: 'Desafío estratégico: diversificación geográfica y expansión',
+      opciones: [
+        { texto: 'Invertir activamente en Europa y LATAM como mercados prioritarios', detalle: 'Reducir la dependencia de EE.UU. y Canadá, usando la ventaja nearshore de la región como diferencial.', puntos: 20, tipo: 'positivo', feedback: 'Reduce el riesgo sistémico a largo plazo. LATAM sigue siendo ventaja competitiva para nearshore.' },
+        { texto: 'Concentrarse aún más en EE.UU. porque es donde está el dinero', detalle: 'Profundizar solo en el mercado que más factura hoy.', puntos: -15, tipo: 'negativo', feedback: 'Aumenta la dependencia estratégica. Si ese mercado cae, no hay plan B.' },
+        { texto: 'Abrir oficinas en Asia para competir en costo con India', detalle: 'Copiar el modelo offshore asiático de competidores como TCS o Infosys.', puntos: 10, tipo: 'neutro', feedback: 'Visionant ya tiene presencia en India, pero competir en costo no es su ventaja. Su fuerte es nearshore LATAM.' }
+      ]
+    }
+  ]
+};
+
+const TOTAL_ESCENARIOS = TEMAS.reduce((n, t) => n + ESCENARIOS[t.id].length, 0);
+
+function maxRondasPermitidas(jugadores) {
+  return Math.floor(TOTAL_ESCENARIOS / jugadores);
+}
+
+function crearColaEscenarios(cantidad) {
+  const cola = [];
+  TEMAS.forEach(t => {
+    ESCENARIOS[t.id].forEach((_, idx) => cola.push({ temaId: t.id, idx }));
+  });
+  for (let i = cola.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cola[i], cola[j]] = [cola[j], cola[i]];
+  }
+  const resultado = cola.slice(0, cantidad);
+  const claves = new Set(resultado.map(x => `${x.temaId}-${x.idx}`));
+  if (claves.size !== resultado.length) {
+    throw new Error('La cola de escenarios tiene preguntas duplicadas.');
+  }
+  return resultado;
+}
+
+function centroSegmento(temaIndex) {
+  const slice = 360 / TEMAS.length;
+  return temaIndex * slice + slice / 2 - 90;
+}
+
+function anguloParaTema(temaIndex) {
+  return ((-90 - centroSegmento(temaIndex)) % 360 + 360) % 360;
+}
+
+const ANGULOS_RULETA = Object.fromEntries(
+  TEMAS.map((t, i) => [t.id, anguloParaTema(i)])
+);
+
+function indiceTemaPorRotacion(anguloDeg) {
+  const slice = 360 / TEMAS.length;
+  const normalizado = ((anguloDeg % 360) + 360) % 360;
+  const centro = ((-90 - normalizado) % 360 + 360) % 360;
+  return Math.floor((centro + 90 - slice / 2) / slice + 1e-9) % TEMAS.length;
+}
+
+/* ═══════════════════════════════════════════
+   ESTADO DEL JUEGO
+   ═══════════════════════════════════════════ */
+let estado = {
+  jugadores: [],
+  turno: 0,
+  maxTurnos: 0,
+  turnoGlobal: 0,
+  girando: false,
+  colaEscenarios: []
+};
+
+const canvas = document.getElementById('ruleta');
+const ctx = canvas.getContext('2d');
+let rotacionActual = 0;
+
+/* ═══════════════════════════════════════════
+   INICIO — Jugadores
+   ═══════════════════════════════════════════ */
+function renderPlayerInputs() {
+  const n = parseInt(document.getElementById('numJugadores').value, 10);
+  const container = document.getElementById('playerInputs');
+  container.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.placeholder = `Nombre consultor ${i + 1}`;
+    inp.value = n === 1 ? 'Consultor' : ['Ana', 'Bruno', 'Carla', 'Diego'][i] || `Jugador ${i + 1}`;
+    inp.dataset.idx = i;
+    container.appendChild(inp);
+  }
+}
+
+document.getElementById('numJugadores').addEventListener('change', () => {
+  renderPlayerInputs();
+  actualizarOpcionesRondas();
+});
+renderPlayerInputs();
+actualizarOpcionesRondas();
+
+function actualizarOpcionesRondas() {
+  const jugadores = parseInt(document.getElementById('numJugadores').value, 10);
+  const maxR = maxRondasPermitidas(jugadores);
+  const select = document.getElementById('numRondas');
+  const previa = parseInt(select.value, 10) || 3;
+  const opciones = [2, 3, 4, 5, 6, 8].filter(r => r <= maxR);
+  if (!opciones.length) opciones.push(1);
+  const elegida = opciones.includes(previa) ? previa : opciones[opciones.length - 1];
+  select.innerHTML = opciones.map(r => {
+    const labels = { 2: '2 rondas (partida corta)', 8: '8 rondas (partida larga)' };
+    const label = labels[r] || `${r} rondas`;
+    return `<option value="${r}"${r === elegida ? ' selected' : ''}>${label}</option>`;
+  }).join('');
+}
+
+document.getElementById('btnIniciar').addEventListener('click', iniciarJuego);
+
+function iniciarJuego() {
+  const n = parseInt(document.getElementById('numJugadores').value, 10);
+  const rondas = parseInt(document.getElementById('numRondas').value, 10);
+  const maxTurnos = n * rondas;
+
+  if (maxTurnos > TOTAL_ESCENARIOS) {
+    alert(
+      `No hay suficientes escenarios sin repetir.\n\n` +
+      `Pediste ${maxTurnos} turnos (${rondas} rondas × ${n} jugadores) pero solo hay ${TOTAL_ESCENARIOS} preguntas únicas.\n\n` +
+      `Máximo permitido: ${maxRondasPermitidas(n)} rondas por jugador con ${n} jugador(es).`
+    );
+    return;
+  }
+
+  const inputs = document.querySelectorAll('#playerInputs input');
+  const jugadores = [];
+  inputs.forEach((inp, i) => {
+    const nombre = inp.value.trim() || `Consultor ${i + 1}`;
+    jugadores.push({ nombre, puntos: 0, historial: [] });
+  });
+
+  estado = {
+    jugadores,
+    turno: 0,
+    rondasPorJugador: rondas,
+    maxTurnos,
+    turnoGlobal: 0,
+    girando: false,
+    colaEscenarios: crearColaEscenarios(maxTurnos)
+  };
+
+  rotacionActual = 0;
+  document.getElementById('rondaTotal').textContent = estado.maxTurnos;
+  document.getElementById('rondaMaxJugador').textContent = rondas;
+  dibujarRuleta();
+  renderLegend();
+  actualizarUI();
+  Sonidos.init();
+  mostrarPantalla('screen-juego');
+}
+
+function mostrarPantalla(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ═══════════════════════════════════════════
+   SONIDOS — Web Audio API (sin archivos externos)
+   ═══════════════════════════════════════════ */
+const Sonidos = {
+  ctx: null,
+  spinNodes: null,
+  ultimoAnguloClick: null,
+
+  init() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  },
+
+  iniciarGiroRuleta() {
+    const ctx = this.init();
+    this.detenerGiroRuleta();
+
+    const len = ctx.sampleRate * 2;
+    const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let brown = 0;
+    for (let i = 0; i < len; i++) {
+      brown = (brown + (Math.random() * 2 - 1) * 0.15) * 0.92;
+      data[i] = brown;
+    }
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 280;
+    filter.Q.value = 1.2;
+
+    const spinGain = ctx.createGain();
+    spinGain.gain.setValueAtTime(0, ctx.currentTime);
+    spinGain.gain.linearRampToValueAtTime(0.11, ctx.currentTime + 0.12);
+
+    noise.connect(filter).connect(spinGain).connect(ctx.destination);
+    noise.start();
+
+    this.spinNodes = { noise, spinGain, filter };
+    this.ultimoAnguloClick = null;
+  },
+
+  actualizarGiroRuleta(t, anguloDeg) {
+    if (this.spinNodes) {
+      const ctx = this.ctx;
+      const vel = Math.pow(1 - t, 1.6);
+      this.spinNodes.spinGain.gain.setTargetAtTime(0.02 + vel * 0.14, ctx.currentTime, 0.04);
+      this.spinNodes.filter.frequency.setTargetAtTime(180 + vel * 520, ctx.currentTime, 0.04);
+    }
+
+    const paso = 360 / TEMAS.length;
+    if (this.ultimoAnguloClick === null) {
+      this.ultimoAnguloClick = anguloDeg;
+      return;
+    }
+    const cruces = Math.floor((anguloDeg - this.ultimoAnguloClick) / paso);
+    if (cruces > 0) {
+      const tocar = Math.min(cruces, 3);
+      for (let i = 0; i < tocar; i++) {
+        this.clickRuleta(0.35 + (1 - t) * 0.75);
+      }
+      this.ultimoAnguloClick += cruces * paso;
+    }
+  },
+
+  clickRuleta(fuerza) {
+    const ctx = this.init();
+    const t0 = ctx.currentTime;
+    const vol = Math.min(fuerza, 1.3);
+
+    const clickLen = Math.floor(ctx.sampleRate * 0.018);
+    const clickBuf = ctx.createBuffer(1, clickLen, ctx.sampleRate);
+    const clickData = clickBuf.getChannelData(0);
+    for (let i = 0; i < clickLen; i++) {
+      clickData[i] = (Math.random() * 2 - 1) * (1 - i / clickLen);
+    }
+    const click = ctx.createBufferSource();
+    click.buffer = clickBuf;
+    const clickGain = ctx.createGain();
+    clickGain.gain.setValueAtTime(0.05 + vol * 0.07, t0);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.022);
+    const clickFilter = ctx.createBiquadFilter();
+    clickFilter.type = 'highpass';
+    clickFilter.frequency.value = 900;
+    click.connect(clickFilter).connect(clickGain).connect(ctx.destination);
+    click.start(t0);
+
+    const ping = ctx.createOscillator();
+    const pingGain = ctx.createGain();
+    ping.type = 'triangle';
+    ping.frequency.setValueAtTime(2200 + Math.random() * 600, t0);
+    ping.frequency.exponentialRampToValueAtTime(650, t0 + 0.035);
+    pingGain.gain.setValueAtTime(0.04 + vol * 0.05, t0);
+    pingGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.045);
+    ping.connect(pingGain).connect(ctx.destination);
+    ping.start(t0);
+    ping.stop(t0 + 0.05);
+  },
+
+  detenerGiroRuleta() {
+    if (this.spinNodes) {
+      const { noise, spinGain } = this.spinNodes;
+      const ctx = this.ctx;
+      spinGain.gain.setTargetAtTime(0, ctx.currentTime, 0.06);
+      noise.stop(ctx.currentTime + 0.12);
+      this.spinNodes = null;
+    }
+    this.ultimoAnguloClick = null;
+  },
+
+  finRuleta() {
+    this.detenerGiroRuleta();
+    this.clickRuleta(1.35);
+
+    const ctx = this.init();
+    [330, 440, 554.37].forEach((freq, i) => {
+      const t = ctx.currentTime + 0.05 + i * 0.07;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.12, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.38);
+    });
+  },
+
+  finPartida() {
+    const ctx = this.init();
+    const melody = [
+      { f: 523.25, d: 0 },
+      { f: 659.25, d: 0.14 },
+      { f: 783.99, d: 0.28 },
+      { f: 1046.5, d: 0.42 },
+      { f: 783.99, d: 0.56 },
+      { f: 1046.5, d: 0.7 }
+    ];
+    melody.forEach(({ f, d }) => {
+      const t = ctx.currentTime + d;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.16, t + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.5);
+    });
+  }
+};
+
+/* ═══════════════════════════════════════════
+   RULETA
+   ═══════════════════════════════════════════ */
+function dibujarRuleta(angulo = 0) {
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r = cx - 6;
+  const slice = (2 * Math.PI) / TEMAS.length;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angulo);
+
+  TEMAS.forEach((tema, i) => {
+    const start = i * slice - Math.PI / 2;
+    const end = start + slice;
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = tema.color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.save();
+    const mid = start + slice / 2;
+    ctx.rotate(mid);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px Syne, sans-serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 3;
+    const label = tema.nombre.length > 12 ? tema.nombre.slice(0, 10) + '…' : tema.nombre;
+    ctx.fillText(label, r - 14, 4);
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+function renderLegend() {
+  const el = document.getElementById('legend');
+  el.innerHTML = TEMAS.map(t =>
+    `<span><i style="background:${t.color}"></i>${t.nombre}</span>`
+  ).join('');
+}
+
+function obtenerTemaPorAngulo(anguloDeg) {
+  return TEMAS[indiceTemaPorRotacion(anguloDeg)];
+}
+
+function obtenerEscenarioDesdeCola(turnoIndex) {
+  const item = estado.colaEscenarios[turnoIndex];
+  return {
+    tema: TEMAS.find(t => t.id === item.temaId),
+    escenario: ESCENARIOS[item.temaId][item.idx]
+  };
+}
+
+document.getElementById('btnGirar').addEventListener('click', girarRuleta);
+
+function girarRuleta() {
+  if (estado.girando || estado.turnoGlobal >= estado.maxTurnos) return;
+
+  const item = estado.colaEscenarios[estado.turnoGlobal];
+  const tema = TEMAS.find(t => t.id === item.temaId);
+  const escenario = ESCENARIOS[item.temaId][item.idx];
+  const anguloObjetivo = ANGULOS_RULETA[item.temaId];
+
+  estado.girando = true;
+  document.getElementById('btnGirar').disabled = true;
+  Sonidos.init();
+  Sonidos.iniciarGiroRuleta();
+
+  const desde = ((rotacionActual % 360) + 360) % 360;
+  let delta = anguloObjetivo - desde;
+  if (delta <= 0) delta += 360;
+  const vueltas = 5 + Math.floor(Math.random() * 3);
+  const totalGiro = vueltas * 360 + delta;
+  const duracion = 4200;
+  const inicio = performance.now();
+
+  function animar(ahora) {
+    const t = Math.min((ahora - inicio) / duracion, 1);
+    const ease = 1 - Math.pow(1 - t, 4);
+    const angulo = desde + totalGiro * ease;
+    dibujarRuleta(angulo * Math.PI / 180);
+    Sonidos.actualizarGiroRuleta(t, angulo);
+
+    if (t < 1) {
+      requestAnimationFrame(animar);
+    } else {
+      rotacionActual = anguloObjetivo;
+      estado.ultimoTema = tema.nombre;
+      estado.ultimoEscenario = escenario.titulo;
+      estado.girando = false;
+      Sonidos.finRuleta();
+      setTimeout(() => mostrarTarjeta(tema, escenario), 400);
+    }
+  }
+  requestAnimationFrame(animar);
+}
+
+/* ═══════════════════════════════════════════
+   TARJETA DE DECISIÓN
+   ═══════════════════════════════════════════ */
+function mostrarTarjeta(tema, esc) {
+  const overlay = document.getElementById('modalOverlay');
+  const tag = document.getElementById('modalTag');
+  tag.textContent = tema.nombre;
+  tag.style.background = tema.color + '33';
+  tag.style.color = tema.color;
+  tag.style.border = `1px solid ${tema.color}55`;
+
+  const badge = document.getElementById('modalProblemaReal');
+  badge.textContent = `⚠️ Problema de ${tema.nombre}: ${tema.problemaTipo}`;
+  badge.style.color = tema.color;
+  badge.style.background = tema.color + '18';
+  badge.style.borderColor = tema.color + '55';
+
+  document.getElementById('modalTitulo').textContent = esc.titulo;
+  document.getElementById('modalTeoria').textContent = '📚 Concepto de la materia: ' + esc.teoria;
+  document.getElementById('modalContexto').innerHTML =
+    '<strong>¿De qué se trata?</strong>' + esc.contexto;
+
+  const prob = esc.problematica.startsWith('PROBLEMA')
+    ? esc.problematica
+    : `PROBLEMA DE ${tema.nombre.toUpperCase()}: ${esc.problematica}`;
+  document.getElementById('modalProblematica').innerHTML =
+    '<strong>⚠️ La problemática</strong>' + prob +
+    (esc.casoReal ? '<br><br><strong>📌 Caso real Visionant:</strong> ' + esc.casoReal : '');
+
+  document.getElementById('modalPregunta').textContent =
+    esc.pregunta || '¿Qué harías vos como consultor del consejo directivo?';
+
+  const cont = document.getElementById('modalOpciones');
+  cont.innerHTML = '';
+  const fb = document.getElementById('feedbackBox');
+  fb.classList.remove('show', 'positivo', 'negativo', 'neutro');
+
+  esc.opciones.forEach((op, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opcion';
+    btn.innerHTML =
+      `<span class="opcion-titulo">${String.fromCharCode(65 + i)}) ${op.texto}</span>` +
+      (op.detalle ? `<span class="opcion-detalle">${op.detalle}</span>` : '');
+    btn.addEventListener('click', () => elegirOpcion(btn, op));
+    cont.appendChild(btn);
+  });
+
+  overlay.classList.add('show');
+}
+
+function elegirOpcion(btn, opcion) {
+  document.querySelectorAll('.opcion').forEach(b => b.disabled = true);
+  const jugador = estado.jugadores[estado.turno];
+  jugador.puntos += opcion.puntos;
+  if (!jugador.historial) jugador.historial = [];
+  jugador.historial.push({
+    tema: estado.ultimoTema || '—',
+    escenario: estado.ultimoEscenario || '—',
+    opcion: opcion.texto,
+    puntos: opcion.puntos
+  });
+
+  const fb = document.getElementById('feedbackBox');
+  const signo = opcion.puntos >= 0 ? '+' : '';
+  document.getElementById('ptsChange').textContent = `${signo}${opcion.puntos} Puntos Visionant`;
+  document.getElementById('ptsChange').style.color =
+    opcion.tipo === 'positivo' ? 'var(--success)' :
+    opcion.tipo === 'negativo' ? 'var(--danger)' : 'var(--warning)';
+  document.getElementById('feedbackText').textContent = opcion.feedback;
+  fb.className = 'feedback-box show ' + (opcion.tipo || 'neutro');
+}
+
+document.getElementById('btnContinuar').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('btnGirar').disabled = false;
+  avanzarTurno();
+});
+
+function avanzarTurno() {
+  estado.turnoGlobal++;
+  if (estado.turnoGlobal >= estado.maxTurnos) {
+    mostrarResultados();
+    return;
+  }
+
+  estado.turno = (estado.turno + 1) % estado.jugadores.length;
+  actualizarUI();
+}
+
+function actualizarUI() {
+  const j = estado.jugadores[estado.turno];
+  const rondaDelJugador = Math.floor(estado.turnoGlobal / estado.jugadores.length) + 1;
+
+  document.getElementById('turnoNombre').textContent = j.nombre;
+  document.getElementById('rondaActual').textContent = estado.turnoGlobal + 1;
+  document.getElementById('rondaJugador').textContent = Math.min(rondaDelJugador, estado.rondasPorJugador);
+
+  const pct = (estado.turnoGlobal / estado.maxTurnos) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  const sorted = [...estado.jugadores].sort((a, b) => b.puntos - a.puntos);
+  const restantes = estado.maxTurnos - estado.turnoGlobal;
+  document.getElementById('scoreList').innerHTML = sorted.map(p => {
+    const isActive = p === j;
+    return `
+    <div class="player-row ${isActive ? 'active' : ''}">
+      <span>${p.nombre}</span>
+      <span class="pts">${p.puntos}</span>
+    </div>`;
+  }).join('') + (restantes > 0
+    ? `<p style="font-size:0.75rem;color:var(--muted);margin-top:10px">${restantes} pregunta${restantes > 1 ? 's' : ''} sin repetir restante${restantes > 1 ? 's' : ''}</p>`
+    : '');
+}
+
+/* ═══════════════════════════════════════════
+   RESULTADOS
+   ═══════════════════════════════════════════ */
+function mostrarResultados() {
+  Sonidos.finPartida();
+
+  const sorted = [...estado.jugadores].sort((a, b) => b.puntos - a.puntos);
+  const ganador = sorted[0];
+  const empate = sorted.filter(p => p.puntos === ganador.puntos).length > 1;
+
+  document.getElementById('tituloGanador').textContent = empate
+    ? '¡Empate estratégico!'
+    : `🏆 ¡Gana ${ganador.nombre}!`;
+  document.getElementById('subGanador').textContent = empate
+    ? `Los consultores empataron con ${ganador.puntos} Puntos Visionant tras ${estado.maxTurnos} turnos.`
+    : `${ganador.nombre} acumuló ${ganador.puntos} Puntos Visionant y demostró la mejor gestión organizacional.`;
+
+  document.getElementById('rankingMeta').innerHTML = `
+    <span>${estado.jugadores.length} jugador${estado.jugadores.length > 1 ? 'es' : ''}</span>
+    <span>${estado.rondasPorJugador} rondas c/u</span>
+    <span>${estado.maxTurnos} turnos totales</span>
+  `;
+
+  document.getElementById('podium').innerHTML = sorted.map((p, i) => `
+    <div class="podium-item ${i === 0 && !empate ? 'winner' : ''}">
+      <div class="rank">${i === 0 && !empate ? '🥇' : i + 1}</div>
+      <div style="flex:1">
+        <strong>${p.nombre}</strong>
+        <div style="font-size:0.82rem;color:var(--muted)">Consultor del consejo</div>
+      </div>
+      <div class="pts" style="font-family:Syne;font-size:1.4rem;font-weight:800">${p.puntos}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('rankingBody').innerHTML = sorted.map((p, i) => `
+    <tr class="${i === 0 && !empate ? 'winner-row' : ''}">
+      <td>${i + 1}</td>
+      <td>${p.nombre}</td>
+      <td><strong>${p.puntos}</strong></td>
+      <td>${(p.historial || []).length}</td>
+    </tr>
+  `).join('');
+
+  const max = ganador.puntos;
+  let diag = '';
+  if (max >= 80) diag = 'Excelente gestión: tus decisiones ayudaron a Visionant a transformarse con coherencia. La empresa tiene chances reales de salir adelante con el nuevo modelo de IA.';
+  else if (max >= 40) diag = 'Gestión mixta: hubo buenas decisiones, pero también errores que generaron desconfianza o retrasaron el cambio. Visionant necesita más coherencia entre lo que dice y lo que hace.';
+  else if (max >= 0) diag = 'Resultado regular: la empresa sobrevive, pero la transformación se estancó. Hubo demasiadas decisiones reactivas sin un plan claro.';
+  else diag = 'Resultado crítico: las decisiones dañaron la confianza, la cultura y las finanzas. Visionant quedó muy vulnerable frente a la competencia.';
+
+  document.getElementById('diagnostico').innerHTML = `<strong>Diagnóstico organizacional:</strong> ${diag}`;
+  mostrarPantalla('screen-resultados');
+}
+
+document.getElementById('btnReiniciar').addEventListener('click', () => mostrarPantalla('screen-inicio'));
+document.getElementById('btnAbandonar').addEventListener('click', () => {
+  if (confirm('¿Abandonar la simulación?')) mostrarPantalla('screen-inicio');
+});
+
+dibujarRuleta();
+renderLegend();
+</script>
+</body>
+</html>
